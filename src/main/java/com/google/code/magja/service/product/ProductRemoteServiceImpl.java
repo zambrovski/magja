@@ -905,8 +905,12 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
 
     if (product.getInStock() == null && product.getQty() != null) {
       product.setInStock(product.getQty() > 0);
+    }
+
+    if (product.getQty() != null) {
       properties.put("qty", product.getQty());
     }
+
     properties.put("is_in_stock", BooleanUtils.toBoolean(product.getInStock()) ? "1" : "0");
     if (product.getManageStock() != null) {
       properties.put("manage_stock", BooleanUtils.toBoolean(product.getManageStock()) ? "1" : "0");
@@ -942,17 +946,23 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
 
   /**
    * Controls the parameter manage stock for given product.
-   * @param product product with SKU or ID set.
-   * @param useDefaultManageStock controls if the store default is used or not.
-   * @param manageStock if store default is not used, controls the value of the property manage stock. 
-   * @throws ServiceException on any error.
+   * 
+   * @param product
+   *          product with SKU or ID set.
+   * @param useDefaultManageStock
+   *          controls if the store default is used or not.
+   * @param manageStock
+   *          if store default is not used, controls the value of the property
+   *          manage stock.
+   * @throws ServiceException
+   *           on any error.
    */
   public void setManageStock(final Product product, final boolean useDefaultManageStock, final boolean manageStock) throws ServiceException {
     if (product.getId() == null && product.getSku() == null) {
       throw new ServiceException("The product must have the id or the sku seted for update inventory");
     }
     final Map<String, Object> properties = new HashMap<String, Object>();
-    
+
     if (useDefaultManageStock) {
       properties.put("use_config_manage_stock", "1");
     } else {
