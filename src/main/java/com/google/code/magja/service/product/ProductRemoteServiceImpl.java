@@ -151,6 +151,7 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
          * means its a type not covered by the enum, so we have to look in
          * magento api to get this type
          */
+        // FIXME: this is a potential bug.
         List<ProductType> types = listAllProductTypes();
         for (ProductType productType : types) {
           type = productType.getType((String) mpp.get("type"));
@@ -350,12 +351,13 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
       throw new ServiceException(e.getMessage());
     }
 
-    if (productList == null)
+    if (productList == null) {
       return products;
+    }
 
-    for (Map<String, Object> mpp : productList)
+    for (Map<String, Object> mpp : productList) {
       products.add(buildProduct(mpp, ImmutableSet.<String> of(), dependencies));
-
+    }
     return products;
   }
 
@@ -488,10 +490,11 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
       throw new ServiceException("Error calling product.info with id=" + id + ", attributes=" + attributes, e);
     }
 
-    if (mpp == null)
+    if (mpp == null) {
       return null;
-    else
+    } else {
       return buildProduct(mpp, attributes, true);
+    }
   }
 
   @Override
@@ -523,8 +526,9 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
       });
       return products;
     } catch (AxisFault e) {
-      if (debug)
+      if (debug) {
         e.printStackTrace();
+      }
       log.error("listAllPlus error " + attributesToSelect, e);
       throw new ServiceException("listAllPlus error " + attributesToSelect, e);
     }
@@ -732,6 +736,13 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
     }
   }
 
+  /**
+   * Method using Magja extension.
+   * 
+   * @param productSku
+   * @param attributeNames
+   * @throws ServiceException
+   */
   @Override
   public void setConfigurableAttributes(String productSku, Map<String, String> attributeNames) throws ServiceException {
 
@@ -764,42 +775,48 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
   private void handleConfigurableForNewProducts(Product product) throws ServiceException, NoSuchAlgorithmException {
 
     // if isn't a configurable product, stop the execution
-    if (!product.getType().equals(ProductType.CONFIGURABLE))
+    if (!product.getType().equals(ProductType.CONFIGURABLE)) {
       return;
+    }
 
     if (product.getConfigurableAttributesData() != null) {
-      Map<String, Object> confAttrDataMap = new HashMap<String, Object>();
+      final Map<String, Object> confAttrDataMap = new HashMap<String, Object>();
 
       Integer i = 0;
       for (ConfigurableAttributeData configAttr : product.getConfigurableAttributesData()) {
         confAttrDataMap.put(i.toString(), configAttr.serializeToApi());
         i++;
       }
-
       product.set("configurable_attributes_data", confAttrDataMap);
     }
 
     if (product.getConfigurableSubProducts() != null) {
 
-      if (product.getConfigurableProductsData() == null)
+      if (product.getConfigurableProductsData() == null) {
         product.setConfigurableProductsData(new HashMap<String, Map<String, Object>>());
+      }
 
-      for (ConfigurableProductData prdData : product.getConfigurableSubProducts()) {
+      for (ConfigurableProductData childProductData : product.getConfigurableSubProducts()) {
+        final Product child = childProductData.getProduct();
+        if (child.getType().equals(ProductType.SIMPLE)) {
 
-        Product subprd = prdData.getProduct();
-
-        if (subprd.getType().equals(ProductType.SIMPLE)) {
-
-          Product existingProduct = getBySku(subprd.getSku(), false);
-          if (existingProduct != null) {
-            subprd.setId(existingProduct.getId());
-            prdData.setExistingProduct(existingProduct);
+          if (child.getSku() != null && child.getId() != null) {
+            // product is already pre-loaded, skip loading it.
+          } else {
+            Product existingProduct = getBySku(child.getSku(), false);
+            if (existingProduct != null) {
+              child.setId(existingProduct.getId());
+              childProductData.setExistingProduct(existingProduct);
+            }
+            // update the child. this is required if the child has been created
+            // on the fly.
+            this.update(child, existingProduct);
           }
-
-          this.save(subprd, existingProduct);
+        } else {
+          log.info("Bogus configuraion, a subproduct point to a configurable product instead of a simple.");
         }
 
-        product.getConfigurableProductsData().put(subprd.getId().toString(), prdData.serializeToApi());
+        product.getConfigurableProductsData().put(child.getId().toString(), childProductData.serializeToApi());
       }
     }
   }
@@ -1038,8 +1055,9 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
   @Override
   public void add(Product product, String storeView) throws ServiceException, NoSuchAlgorithmException {
     // if is a configurable product, call the proper handle
-    if (product.getType().equals(ProductType.CONFIGURABLE))
+    if (product.getType().equals(ProductType.CONFIGURABLE)) {
       handleConfigurableForNewProducts(product);
+    }
 
     try {
       Object[] newProductArgs = product.serializeToApi();
@@ -1047,20 +1065,23 @@ public class ProductRemoteServiceImpl extends GeneralServiceImpl<Product> implem
       log.info("Creating '" + product.getSku() + "'");
       int id = Integer.parseInt((String) soapClient.callArgs(ResourcePath.ProductCreate, newProductArgs));
       log.debug("{} {} returned {}", new Object[] { ResourcePath.ProductCreate, product.getSku(), id });
-      if (id > 0)
+      if (id > 0) {
         product.setId(id);
-      else
+      } else {
         throw new ServiceException("Error adding Product " + product.getSku() + ": " + product.getName() + ", returned Product ID is empty");
+      }
     } catch (Exception e) {
       log.error("Error adding Product " + product.getSku() + ": " + product.getName() + " cause: " + e.getCause(), e);
-      if (debug)
+      if (debug) {
         e.printStackTrace();
+      }
       throw new ServiceException("Error adding Product " + product.getSku() + ": " + product.getName() + " cause: " + e.getCause(), e);
     }
 
     // inventory
-    if (product.getQty() != null)
+    if (product.getQty() != null) {
       updateInventory(product);
+    }
 
     doAssignProductMedias(product, ImmutableList.<ProductMedia> of());
     doAssignProductLinks(product, ImmutableSet.<ProductLink> of());

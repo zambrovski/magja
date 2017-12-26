@@ -9,7 +9,7 @@ import com.google.code.magja.magento.ResourcePath;
 public interface SoapClient {
 
   /**
-   * Call Magento API with multiple arguments.
+   * Calls Magento API with multiple arguments.
    * 
    * @param path
    * @param args
@@ -19,7 +19,7 @@ public interface SoapClient {
   <R> R callArgs(ResourcePath path, Object[] args) throws AxisFault;
 
   /**
-   * Call Magento API with single argument.
+   * Calls Magento API with single argument.
    * 
    * @param path
    * @param arg
@@ -28,9 +28,22 @@ public interface SoapClient {
    */
   <T, R> R callSingle(ResourcePath path, T arg) throws AxisFault;
 
+  /**
+   * Calls Magento API without arguments.
+   * @param path
+   * @return
+   * @throws AxisFault
+   */
   <R> R callNoArgs(ResourcePath path) throws AxisFault;
 
-  Object multiCall(List<ResourcePath> path, List<Object> args) throws AxisFault;
+  /**
+   * Calls Magento API multiple time.
+   * @param path 
+   * @param args
+   * @return
+   * @throws AxisFault
+   */
+  Object multiCall(List<ResourcePath> paths, List<Object> args) throws AxisFault;
 
   /**
    * Retrieves the configuration.

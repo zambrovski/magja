@@ -1,6 +1,6 @@
 # Magja
 
-Magja is a Java Connector for Magento's SOAP API that allows easy integration with the popular shop system 
+Magja is a Java Connector for Magento's SOAP API that allows easy integration with the popular shop system
 and allows to exchange all data available by the Magento API.
 
 ## Core Features
@@ -20,7 +20,7 @@ and allows to exchange all data available by the Magento API.
 * Extensible (without code generation) for custom API
 
 ## Installation and configuration
- 
+
 Magja artifacts are available in the Sonatype Maven repository. Pleas put the following repository definition into your `pom.xml`:
 
     <repositories>
@@ -30,7 +30,7 @@ Magja artifacts are available in the Sonatype Maven repository. Pleas put the fo
         <url>http://oss.sonatype.org/content/groups/public</url>
       </repository>
     </repositories>
-    
+
 and add the dependency to your project:
 
     <dependency>
@@ -38,47 +38,27 @@ and add the dependency to your project:
       <artifactId>magja</artifactId>
       <version>1.0.3-SNAPSHOT</version>
     </dependency>
-    
+
 to get started. In order to connect to your Magento Shop installation, you need to put `magento-api.properties` on your classpath.
 You can copy an example properties from samples folder. Essentially, the properties are self-explanatory:
-       
+
     # SOAP XML/RPC user
-    magento-api-username=<replace with user> 
-    
+    magento-api-username=<replace with user>
+
     # SOAP XML/RPC api key
     magento-api-password=<replace with api key>
-    
+
     # URL of the Magento installation
     # If your shop is installed not using a prefix e.g. /magento
     # please add the prefix to the path:
     # http://<yourmagento-host>/magento/index.php/api/soap/
     magento-api-url=http://<yourmagento-host>/index.php/api/soap/
-    
+
     # the ID of the default attribute set
     default-attribute-set-id=4
- 
+
     # the ID of the default root category
     default-root-category-id=2
-
-If you want to use the client behind a HTTP proxy, you can specify the settings in `magento-api.properties`:
-
-    # HTTP proxy settings, default is false
-    http-proxy-enabled=true
-    http-proxy-host=localhost
-    http-proxy-port=8080
-    
-    # HTTP proxy auth settings, default is false
-    http-proxy-auth-enabled=true
-    http-proxy-username=user
-    http-proxy-password=pass
-
-If your shop is protected with HTTP Basic Authentication, you can pass a username and password using the following properties:
-
-    # HTTP auth settings, default is false
-    http-auth-enabled=true
-    http-username=user
-    http-password=pass
-
 
 ## Basic usage
 
@@ -94,12 +74,12 @@ Here is a sample usage of the product service:
 
     try {
       productService.add(product);
-      
+
       List<Product> allProducts = productService.listAll();
       for (Product shopProduct : allProducts) {
         log.info("{}", shopProduct);;
       }
-      
+
     } catch (ServiceException e) {
       log.error("Error manipulating products", e);
     } catch (NoSuchAlgorithmException e) {
@@ -125,7 +105,7 @@ Get Product Category with its parent:
 
     Category category = remoteServiceFactory.getCategoryRemoteService.getByIdWithParent(2);
     Category parent = category.getParent();
-    
+
 Get category with its parent and children:
 
     Category category = remoteServiceFactory.getCategoryRemoteService.getByIdWithParentAndChildren(2)
@@ -154,7 +134,7 @@ Create Product
     product.setWeight(0.500);
     product.setType(ProductTypeEnum.SIMPLE.getProductType());
     product.setAttributeSet(new ProductAttributeSet(4, "Default"));
-    
+
     // category
     List<Category> categories = new ArrayList<Category>();
     categories.add(new Category(2));
@@ -188,13 +168,13 @@ Reading the Customers
 Development snapshots will be deployed periodically from Jenkins CI provided by [Bippo](http://www.bippo.co.id/) & [Soluvas](http://www.soluvas.com/) and get deployed into the Sonatype repository: https://oss.sonatype.org/content/groups/public/ You can use the search UI from https://oss.sonatype.org/
 
 Magja is build using Apache Maven. Please run:
-     
-    mvn clean package 
-    
+
+    mvn clean package
+
 to build the software. There is a Maven profile included, running the entire integration-test suite against a Magento Shop. Please make sure to place your `magento-api.properties` file in `src/test/resources` and run the following command to execute the integration tests:
 
     mvn clean install -P itest
-    
+
 
 ## References and History
 
@@ -203,7 +183,7 @@ Magja has been developed on Google Code, so old resources are still available at
 * Magja: http://code.google.com/p/magja/
 * Installation for Use: http://code.google.com/p/magja/wiki/Installation
 * Setup Project for Development: http://code.google.com/p/magja/wiki/SetupProject
-* Wiki Pages: http://code.google.com/p/magja/w/list 
+* Wiki Pages: http://code.google.com/p/magja/w/list
 
 ## Acknowledgments
 

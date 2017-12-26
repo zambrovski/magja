@@ -17,8 +17,10 @@ import com.google.code.magja.service.ServiceException;
 import com.google.code.magja.soap.SoapClient;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
+
 /**
  * Category service implementation.
+ * 
  * @author andre
  * @author Simon Zambrovski
  */
@@ -66,20 +68,13 @@ public class CategoryRemoteServiceImpl extends GeneralServiceImpl<Category> impl
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * com.google.code.magja.service.category.CategoryRemoteService#getByIdClean
-   * (java.lang.Integer)
-   */
   @Override
   public Category getByIdClean(Integer id) throws ServiceException {
-    log.info("getIdByClean {}", id);
     Category category = new Category();
 
-    if (id == null)
+    if (id == null) {
       return null;
+    }
 
     Map<String, Object> cat;
 
@@ -107,12 +102,6 @@ public class CategoryRemoteServiceImpl extends GeneralServiceImpl<Category> impl
     return category;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.google.code.magja.service.category.CategoryRemoteService#
-   * getByIdWithChildren(java.lang.Integer)
-   */
   @Override
   public Category getByIdWithChildren(Integer id) throws ServiceException {
 
@@ -124,12 +113,6 @@ public class CategoryRemoteServiceImpl extends GeneralServiceImpl<Category> impl
     return category;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.google.code.magja.service.category.CategoryRemoteService#
-   * getByIdWithParent(java.lang.Integer)
-   */
   @Override
   public Category getByIdWithParent(Integer id) throws ServiceException {
 
@@ -167,8 +150,9 @@ public class CategoryRemoteServiceImpl extends GeneralServiceImpl<Category> impl
       cat = (Map<String, Object>) soapClient.callSingle(ResourcePath.CategoryTree, id);
     } catch (AxisFault e) {
       log.error("Error calling CategoryRemoteServiceImpl.getTree()", e);
-      if (debug)
+      if (debug) {
         e.printStackTrace();
+      }
       throw new ServiceException("Error calling CategoryRemoteServiceImpl.getTree()", e);
     }
 
@@ -274,13 +258,6 @@ public class CategoryRemoteServiceImpl extends GeneralServiceImpl<Category> impl
     throw new ServiceException("Child not found");
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * com.google.code.magja.service.category.CategoryRemoteService#create(code
-   * .google .magja.model.product.Category)
-   */
   @SuppressWarnings("unchecked")
   @Override
   public int save(Category category) throws ServiceException {
